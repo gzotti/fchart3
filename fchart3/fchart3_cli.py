@@ -53,7 +53,9 @@ from fchart3.configuration import EngineConfiguration
 from fchart3.graphics.graphics_cairo import CairoDrawing
 from fchart3.graphics.graphics_tikz import TikZDrawing
 from fchart3.graphics.graphics_interface import FontStyle
-from fchart3.horizon_landscape import load_stellarium_landscape
+
+# GZ TODO after rebase: Check whether we need StellariumLandscape
+from fchart3.horizon_landscape import load_stellarium_landscape, StellariumLandscape
 from fchart3.highlights import HighlightDefinition
 
 from fchart3.cli.search_object_utils import (
@@ -67,6 +69,10 @@ from fchart3.cli.solar_system import get_solsys_bodies, get_planet_moons
 
 from fchart3.projections.projection import ProjectionType
 from datetime import datetime, timezone
+
+# GZ TODO after rebase: Check whether we need this
+from datetime import date, datetime, timezone
+
 from skyfield.api import load
 
 skyfield_ts = load.timescale()
@@ -425,6 +431,33 @@ def _ensure_mpc_minor_planets_file(path: str, *, force: bool = False) -> Optiona
             pass
         return None
 
+# TODO: Probably no longer needed. Check after rebase.
+#def _parse_time_arg(value: str) -> datetime:
+#    """Sanitize a time input
+#    A full time spec needs a full ISO8601 string
+#    If parts are missing:
+#    - 'now' is replaced by current time
+#    - if value starts with T for time, prepend current date to it.
+#    """
+#    s = value.strip()
+#    if s.lower() in ("now",):
+#        return datetime.now(timezone.utc)
+#    if s.startswith("T"):
+#        s = date.today().isoformat() + s
+#    if s.endswith("Z"):
+#        s = s[:-1] + "+00:00"
+#    try:
+#        dt = datetime.fromisoformat(s)
+#    except ValueError as e:
+#        raise argparse.ArgumentTypeError(
+#            f"Invalid --time value '{value}'. Expected ISO-8601, e.g. "
+#            f"2026-01-02T21:15:00Z or 2026-01-02T21:15:00+01:00, or 'now'."
+#            f"You can omit date and just specify T22:15:00Z, then current system date is used."
+#        ) from e
+#    if dt.tzinfo is None:
+#        dt = dt.replace(tzinfo=timezone.utc)
+#    return dt.astimezone(timezone.utc)
+
 
 def _search_sky_object(source, settings):
     parsed_pos = None
@@ -646,7 +679,7 @@ class RuntimeSettings:
                                     help="Projection type (default: stereographic).")
         argumentparser.add_argument('-fov', '--fieldsize',
                                     dest='fieldsize', nargs='?', action='store', type=float,
-                                    help='Diameter of the field of view in degrees (default: 7.0)')
+                                    help='Diameter (along longer image axis) of the field of view in degrees (default: 7.0)')
 
         argumentparser.add_argument('-fmessier', '--force-messier', dest='force_messier', action='store_true', default=None,
                                     help='Select all Messier objects, regardless of the limiting magnitude for deep sky objects.')
@@ -843,8 +876,11 @@ class RuntimeSettings:
                                          "Works with --show-horizon-circle; intended for all-sky fisheye charts.")
 
         argumentparser.add_argument('-t', dest='dt', type=parse_observation_time, default=None,
+                                    # GZ TODO: add long argument, check what to use in type arg after rebase?
+                                    #argumentparser.add_argument('-t', '--date-time', dest='dt', type=_parse_time_arg, default=None,
+
                                     help='Observation time (UTC) in ISO-8601. '
-                                         'Examples: 2026-01-02T21:15:00Z, 2026-01-02T21:15:00+01:00, or "now".')
+                                         'Examples: 2026-01-02T21:15:00Z, 2026-01-02T21:15:00+01:00, T22:15:00Z or "now".')
 
         argumentparser.add_argument('--trajectory-from', dest='trajectory_from', type=parse_time_or_date, default=None,
                                     help='Comet/Minor planet trajectory start time/date (UTC). '
