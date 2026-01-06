@@ -52,7 +52,7 @@ from fchart3.graphics.graphics_tikz import TikZDrawing
 from fchart3.graphics.graphics_interface import FontStyle
 from fchart3.horizon_landscape import load_stellarium_landscape, StellariumLandscape
 from fchart3.search_object_utils import resolve_star, resolve_solar_system, resolve_planet_moon
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from skyfield.api import load
 
 skyfield_ts = load.timescale()
@@ -289,9 +289,17 @@ def _convert_extra_positions(extra_positions, config: EngineConfiguration, dt_ut
 
 
 def _parse_time_arg(value: str) -> datetime:
+    """Sanitize a time input
+    A full time spec needs a full ISO8601 string
+    If parts are missing:
+    - 'now' is replaced by current time
+    - if value starts with T for time, prepend current date to it.
+    """
     s = value.strip()
     if s.lower() in ("now",):
         return datetime.now(timezone.utc)
+    if s.startswith("T"):
+        s = date.today().isoformat() + s
     if s.endswith("Z"):
         s = s[:-1] + "+00:00"
     try:
@@ -300,6 +308,7 @@ def _parse_time_arg(value: str) -> datetime:
         raise argparse.ArgumentTypeError(
             f"Invalid --time value '{value}'. Expected ISO-8601, e.g. "
             f"2026-01-02T21:15:00Z or 2026-01-02T21:15:00+01:00, or 'now'."
+            f"You can omit date and just specify T22:15:00Z, then current system date is used."
         ) from e
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=timezone.utc)
@@ -427,7 +436,7 @@ class RuntimeSettings:
 
         argumentparser.add_argument('-fov', '--fieldsize',
                                     dest='fieldsize', nargs='?', action='store', type=float,
-                                    help='Diameter of the field of view in degrees (default: 7.0)')
+                                    help='Diameter (along longer image axis) of the field of view in degrees (default: 7.0)')
 
         argumentparser.add_argument('-fmessier', '--force-messier', dest='force_messier', action='store_true',
                                     help='Select all Messier objects, regardless of the limiting magnitude for deep sky objects.')
@@ -603,9 +612,9 @@ class RuntimeSettings:
                                          'Used to load polygonal horizon and pass it to the renderer.'
         )
 
-        argumentparser.add_argument('-t', dest='dt', type=_parse_time_arg, default=None,
+        argumentparser.add_argument('-t', '--date-time', dest='dt', type=_parse_time_arg, default=None,
                                     help='Observation time (UTC) in ISO-8601. '
-                                         'Examples: 2026-01-02T21:15:00Z, 2026-01-02T21:15:00+01:00, or "now".')
+                                         'Examples: 2026-01-02T21:15:00Z, 2026-01-02T21:15:00+01:00, T22:15:00Z or "now".')
 
         argumentparser.add_argument('-v', '--version', action='store_true', default=None, help='Display version information and exit.')
 
