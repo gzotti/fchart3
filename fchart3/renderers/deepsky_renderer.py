@@ -310,12 +310,13 @@ class DeepskyRenderer(BaseRenderer):
         elif labelpos == 3:
             gfx.text_left(-rlong-fh/6.0, -fh/3.0, label)
 
-    def galaxy(self, ctx, x, y, rlong, rshort, posangle, mag, label, label_mag, label_ext, labelpos):
+    def galaxy(self, ctx, x: float, y: float, rlong: float, rshort: float, posangle: float, mag: float,
+               label: str, label_mag, label_ext, labelpos):
         gfx = ctx.gfx
         cfg = ctx.cfg
 
-        rl = rlong
-        rs = rshort
+        rl: float = rlong
+        rs: float = rshort
         if rlong <= 0.0:
             rl = ctx.drawing_width/40.0
             rs = rl/2.0
@@ -358,7 +359,7 @@ class DeepskyRenderer(BaseRenderer):
             gfx.set_pen_rgb((cfg.label_color[0]*dso_intensity,
                                        cfg.label_color[1]*dso_intensity,
                                        cfg.label_color[2]*dso_intensity))
-            label_fh = self.set_label_font(ctx, label_ext)
+            label_fh: float = self.set_label_font(ctx, label_ext)
             if label:
                 self.draw_galaxy_label(ctx, x, y, label, labelpos, rlong, rshort, label_fh)
             if label_ext:
@@ -370,11 +371,12 @@ class DeepskyRenderer(BaseRenderer):
 
         gfx.restore()
 
-    def galaxy_labelpos(self, ctx, x, y, rlong=-1, rshort=-1, posangle=0.0, label_length=0.0):
+    def galaxy_labelpos(self, ctx, x: float, y: float, rlong: float=-1, rshort: float=-1, posangle: float=0.0, label_length: float=0.0):
         gfx = ctx.gfx
         cfg = ctx.cfg
 
         p = posangle
+        # GZ: SUSPICIOUS: if too large, increase?
         if posangle >= 0.5*math.pi:
             p += math.pi
         if posangle < -0.5*math.pi:
