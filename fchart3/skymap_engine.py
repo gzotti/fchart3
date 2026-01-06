@@ -57,10 +57,13 @@ LABELi18N = {
     'PG': _('Part of galaxy')
 }
 
-
+# This is something undocumented for WidgetMagnitudeScale
 STARS_IN_SCALE = 10
+# This is something undocumented for WidgetDsoLegend
 LEGEND_MARGIN = 0.47
-BASE_SCALE = 0.98
+# Image dimensions are correct with BASE_SCALE=1.0
+#BASE_SCALE = 0.98
+BASE_SCALE = 1.00
 
 from skyfield.api import load
 
@@ -124,7 +127,7 @@ class SkymapEngine:
         self.field_size = field_radius * math.hypot(self.drawing_width, self.drawing_height) / wh
 
         if self.cfg.no_margin:
-            self.scene_scale = (wh - self.cfg.legend_linewidth) / wh
+            self.scene_scale = BASE_SCALE * (wh - self.cfg.legend_linewidth) / wh
         else:
             self.scene_scale = BASE_SCALE
 
@@ -340,7 +343,7 @@ class SkymapEngine:
             self.gfx.text_left(self.drawing_width/2.0*BASE_SCALE, -self.drawing_height/2.0*BASE_SCALE - 0.5*font_size, self.created)
 
     def draw_field_border(self):
-        if self.cfg.show_field_border:
+        if self.cfg.show_field_border:  # and not self.cfg.no_margin:
             self.gfx.set_linewidth(self.cfg.legend_linewidth)
             self.gfx.set_pen_rgb(self.cfg.draw_color)
             self.gfx.set_fill_rgb(self.cfg.draw_color)
@@ -397,6 +400,18 @@ class SkymapEngine:
         self.renderers["trajectory"] = TrajectoryRenderer()
 
     def create_widgets(self):
+        """
+        Create widgets, these are legend features:
+        - mag_scale: bottom-left corner boxed magnitude scale
+        - map_scale: bottom-right boxed map scale (line with labeled length)
+        - numeric_map_scale: bottom-left NON-STANDARD
+        - orientation:  top-left, not boxed cross overprint. This is a bit problematic (not axis-aligned at this location!) in wide-angle views
+        - coords: top-right overprint coordinate display of center coordinates
+        - dso_legend overprint legend split into two parts along right margin
+        - telrad: overprint Telrad circles in image center
+        - eyepiece: one overprint circle in image center
+        - picker: used in interactive settings
+        """
         left, bottom, right, top = self.get_field_rect_mm()
         self.space_widget_allocator = SpaceWidgetAllocator(left, bottom, right, top)
 
