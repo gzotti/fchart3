@@ -11,6 +11,8 @@ __pycache__/
 # result files
 *.pdf
 *.svg
+*.png
+*.tikz
 
 # Distribution / packaging
 .Python
@@ -66,3 +68,4 @@ target/
 # Comet elements
 CometEls.txt
 cometelements
+MPCORB.9999.DAT
